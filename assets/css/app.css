@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* This file is for your main application CSS */
+@layer components {
+  .sudoku-board {
+    display: grid;
+    grid-template-columns: repeat(9, 40px); /* Set 9 columns for the Sudoku grid */
+    grid-gap: 5px; /* Small gap between cells */
+    margin-bottom: 20px;
+  }
+
+  .sudoku-row {
+    display: contents; /* Ensure the row acts as a container */
+  }
+
+  /* Override Tailwind Forms plugin styles for Sudoku cells */
+  .sudoku-board input[type="number"] {
+    width: 40px; /* Custom width for Sudoku cells */
+    height: 40px; /* Custom height for Sudoku cells */
+    text-align: center; /* Ensure the text is centered */
+    font-size: 16px !important; /* Ensure the text size is visible */
+    color: black !important; /* Ensure the text color is black */
+    background-color: white !important; /* Ensure the background is white */
+    border: 1px solid #ccc !important; /* Add a subtle border for visibility */
+    z-index: 1; /* Ensure the cells are on top if layered */
+    appearance: none; /* Remove default number input styling */
+    -moz-appearance: textfield; /* Remove default Firefox styling for number inputs */
+  }
+
+  /* Remove number input increment/decrement arrows in Chrome, Safari, and Edge */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* Focus state for the input cells to make them visually distinct when selected */
+  .sudoku-board input:focus {
+    outline: 2px solid blue !important; /* Highlight the cell with a blue border when selected */
+  }
+
+  /* Error message style */
+  .error {
+    color: red;
+    font-size: 14px;
+  }
+}
