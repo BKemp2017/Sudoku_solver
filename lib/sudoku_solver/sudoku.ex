@@ -12,6 +12,7 @@ defmodule SudokuSolver.Sudoku do
 
     case find_empty_cell(board) do
       nil ->
+        IO.puts("Solution found!")
         {:ok, board}  # Solved board
 
       {row, col} ->
@@ -23,7 +24,6 @@ defmodule SudokuSolver.Sudoku do
 
             case solve(new_board) do
               {:ok, solved_board} ->
-                IO.puts("Solution found!")
                 {:halt, {:ok, solved_board}}
               :error ->
                 {:cont, :error}

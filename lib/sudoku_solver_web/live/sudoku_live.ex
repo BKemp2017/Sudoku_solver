@@ -5,8 +5,8 @@ defmodule SudokuSolverWeb.SudokuLive do
   require Logger
 
   def mount(_params, _session, socket) do
-    board = List.duplicate(List.duplicate(0, 9), 9)
-    {:ok, assign(socket, board: board, solved_board: nil, error: nil)}
+    board = create_board(9)
+    {:ok, assign(socket, board: board, solved_board: nil, error: nil, grid_size: 9)}
   end
 
   def handle_event("update_cell", %{"row" => row_str, "col" => col_str, "value" => value_str}, socket) do
@@ -18,21 +18,14 @@ defmodule SudokuSolverWeb.SudokuLive do
     row = String.to_integer(row_str)
     col = String.to_integer(col_str)
 
-    # Add logging to see the updated cell values
-    Logger.debug("Updating cell at row: #{row}, col: #{col}, value: #{value}")
-
     board = List.update_at(socket.assigns.board, row, fn r ->
       List.replace_at(r, col, value)
     end)
-
-    # Log the updated board for debugging
-    Logger.debug("Updated board: #{inspect(board)}")
 
     {:noreply, assign(socket, board: board, solved_board: nil, error: nil)}
   end
 
   def handle_event("solve", _params, socket) do
-    Logger.debug("Attempting to solve the board: #{inspect(socket.assigns.board)}")
 
     # Run the Sudoku solver asynchronously to avoid blocking LiveView
     task = Task.async(fn -> Sudoku.solve(socket.assigns.board) end)
@@ -46,18 +39,33 @@ defmodule SudokuSolverWeb.SudokuLive do
     end
   end
 
+  def handle_event("change_grid_size", %{"grid_size" => grid_size_str}, socket) do
+    grid_size = String.to_integer(grid_size_str)
+    board = create_board(grid_size)
+    Logger.debug("Changing grid size to #{grid_size}")
+    {:noreply, assign(socket, board: board, solved_board: nil, error: nil, grid_size: grid_size)}
+  end
+
   def render(assigns) do
-    IO.inspect(assigns.board, label: "Rendering Board")
 
     ~H"""
     <!-- Your template code goes here -->
     <h1>Sudoku Solver</h1>
 
+    <div>
+      <label for="grid-size">Grid Size:</label>
+      <select id="grid-size" phx-change="change_grid_size">
+        <option value="9" selected={@grid_size == 9}>9x9</option>
+        <option value="5" selected={@grid_size == 5}>5x5</option>
+        <option value="3" selected={@grid_size == 3}>3x3</option>
+      </select>
+    </div>
+
     <%= if @error do %>
       <div class="error"><%= @error %></div>
     <% end %>
 
-    <div class="sudoku-board">
+    <div class="sudoku-board" style={"grid-template-columns: repeat(#{@grid_size}, 40px);"}>
       <%= for {row, row_idx} <- Enum.with_index(@board) do %>
         <div class="sudoku-row">
           <%= for {cell, col_idx} <- Enum.with_index(row) do %>
@@ -80,7 +88,7 @@ defmodule SudokuSolverWeb.SudokuLive do
 
     <%= if @solved_board do %>
       <h2>Solution:</h2>
-      <div class="sudoku-board">
+      <div class="sudoku-board" style={"grid-template-columns: repeat(#{@grid_size}, 40px);"}>
         <%= for row <- @solved_board do %>
           <div class="sudoku-row">
             <%= for cell <- row do %>
@@ -91,5 +99,9 @@ defmodule SudokuSolverWeb.SudokuLive do
       </div>
     <% end %>
     """
+  end
+
+  defp create_board(size) do
+    List.duplicate(List.duplicate(0, size), size)
   end
 end
